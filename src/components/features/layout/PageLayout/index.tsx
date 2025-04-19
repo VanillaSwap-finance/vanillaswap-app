@@ -16,27 +16,25 @@ interface PageLayoutProps {
 
 export default function PageLayout({ children }: PageLayoutProps) {
   return (
-    <Container maxWidth="sm" sx={{ pt: 8 }}>
-      <SnackbarProvider
-        maxSnack={3}
-        autoHideDuration={3000}
-        action={(snackbarId) => (
-          <button
-            style={{
-              backgroundColor: 'transparent',
-              border: '0.5px solid white',
-              borderRadius: '2px',
-              cursor: 'pointer',
-              color: 'white',
-            }}
-            onClick={() => closeSnackbar(snackbarId)}
-          >
-            Close
-          </button>
-        )}
-      >
-        {children}
-      </SnackbarProvider>
-    </Container>
+    <SnackbarProvider
+      maxSnack={3}
+      autoHideDuration={3000}
+      action={(snackbarId) => (
+        <button
+          style={{
+            backgroundColor: 'transparent',
+            border: '0.5px solid white',
+            borderRadius: '2px',
+            cursor: 'pointer',
+            color: 'white',
+          }}
+          onClick={() => closeSnackbar(snackbarId)}
+        >
+          Close
+        </button>
+      )}
+    >
+      {children}
+    </SnackbarProvider>
   )
 }

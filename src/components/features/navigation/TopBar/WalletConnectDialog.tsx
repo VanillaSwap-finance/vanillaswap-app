@@ -22,7 +22,7 @@ export default function WalletConnectDialog({
   open,
   onClose,
 }: WalletConnectDialogProps) {
-  const { isConnected, connect } = useWallet()
+  const { connect } = useWallet()
 
   const handleConnect = async (wallet: (typeof WALLETS)[number]) => {
     try {
