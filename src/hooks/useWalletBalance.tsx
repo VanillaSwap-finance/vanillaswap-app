@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import WalletContext from '@/contexts/wallet'
+import { getXRPLBalance } from '@/libs/xrpl/balance'
 
 export const useWalletBalance = () => {
   const walletContext = useContext(WalletContext)
@@ -10,8 +11,16 @@ export const useWalletBalance = () => {
 
   const { wallet } = walletContext
 
-  const getXRPBalance = async () => {
-    return 0
+  const getXRPBalance = async (): Promise<string> => {
+    if (!wallet) return '0.000'
+
+    try {
+      const balance = await getXRPLBalance(wallet.address, wallet.wss)
+      return balance
+    } catch (error) {
+      console.error('[getXRPBalance] Error getting XRP balance: ', error)
+      return '0.000'
+    }
   }
 
   const getTokenBalance = async () => {
