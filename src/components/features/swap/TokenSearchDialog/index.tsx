@@ -7,16 +7,24 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material'
-import SwapTokenListItem from '@/components/features/token/TokenSearchDialog/SwapTokenListItem'
+import SwapTokenListItem from '@/components/features/swap/TokenSearchDialog/SwapTokenListItem'
 
 interface TokenSearchDialogProps {
   open: boolean
   onClose: () => void
+  onTokenSelect: (
+    symbol: string,
+    issuer: string,
+    position: 'from' | 'to',
+  ) => void
+  side: 'from' | 'to'
 }
 
 export default function TokenSearchDialog({
   open,
   onClose,
+  onTokenSelect,
+  side,
 }: TokenSearchDialogProps) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
@@ -52,7 +60,18 @@ export default function TokenSearchDialog({
             mt: 1,
           }}
         >
-          <SwapTokenListItem />
+          <SwapTokenListItem
+            symbol="XRP"
+            issuer="XRP"
+            onTokenSelect={onTokenSelect}
+            side={side}
+          />
+          <SwapTokenListItem
+            symbol="Mimimi"
+            issuer="rMTnMGHk7k7brMC3vUNn7uP9t7WtLEdZUw"
+            onTokenSelect={onTokenSelect}
+            side={side}
+          />
         </Box>
       </DialogContent>
     </Dialog>

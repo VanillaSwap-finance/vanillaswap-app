@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext } from 'react'
 import { isInstalled, getAddress, getNetwork } from '@gemwallet/api'
 import { WALLET_TYPES } from '@/constants/wallet'
 import { getChainType, getNetworkType } from '@/utilis/walletUtil'

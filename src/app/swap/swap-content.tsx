@@ -1,20 +1,75 @@
 'use client'
 
-import { useState } from 'react'
-import {
-  Box,
-  Button,
-  Divider,
-  IconButton,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { useEffect, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Box, Button, Divider, IconButton, Typography } from '@mui/material'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import TokenSearchDialog from '@/components/features/token/TokenSearchDialog'
+import SwapAmountInput from '@/components/features/swap/SwapAmountInput'
+import TokenSelectButton from '@/components/features/swap/TokenSelectButton'
+import TokenSearchDialog from '@/components/features/swap/TokenSearchDialog'
+import { useSwap } from '@/hooks/useSwap'
+import { useWalletBalance } from '@/hooks/useWalletBalance'
 
 export default function SwapContent() {
-  const [open, setOpen] = useState(false)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const fromTokenSymbol = searchParams.get('fromTokenSymbol') || 'XRP'
+  const fromTokenIssuer = searchParams.get('fromTokenIssuer') || 'XRP'
+  const toTokenSymbol = searchParams.get('toTokenSymbol') || 'Mimimi'
+  const toTokenIssuer =
+    searchParams.get('toTokenIssuer') || 'rMTnMGHk7k7brMC3vUNn7uP9t7WtLEdZUw'
+  const [selectingTokenPosition, setSelectingTokenPosition] = useState<
+    'from' | 'to'
+  >('from')
+
+  const [openTokenSearchDialog, setOpenTokenSearchDialog] = useState(false)
+
+  const { handleSwap } = useSwap()
+  const { getXRPBalance } = useWalletBalance()
+
+  const handleSwichToken = () => {
+    const params = new URLSearchParams(searchParams.toString())
+
+    // FromとToを入れ替える
+    const tempFromTokenSymbol = fromTokenSymbol
+    const tempFromTokenIssuer = fromTokenIssuer
+    const tempToTokenSymbol = toTokenSymbol
+    const tempToTokenIssuer = toTokenIssuer
+
+    params.set('fromTokenSymbol', tempToTokenSymbol)
+    params.set('fromTokenIssuer', tempToTokenIssuer)
+    params.set('toTokenSymbol', tempFromTokenSymbol)
+    params.set('toTokenIssuer', tempFromTokenIssuer)
+
+    router.push(`/swap?${params.toString()}`)
+  }
+
+  const handleSearchTokenDialogOpen = (side: 'from' | 'to') => {
+    setSelectingTokenPosition(side)
+    setOpenTokenSearchDialog(true)
+  }
+
+  const handleTokenSelect = (
+    symbol: string,
+    issuer: string,
+    position: 'from' | 'to',
+  ) => {
+    const params = new URLSearchParams(searchParams.toString())
+
+    if (selectingTokenPosition === 'from') {
+      params.set('fromTokenSymbol', symbol)
+      params.set('fromTokenIssuer', issuer)
+    } else {
+      params.set('toTokenSymbol', symbol)
+      params.set('toTokenIssuer', issuer)
+    }
+
+    router.push(`/swap?${params.toString()}`)
+    setOpenTokenSearchDialog(false)
+  }
+
+  useEffect(() => {}, [])
 
   const CustomBox = ({ children }: { children: React.ReactNode }) => (
     <Box sx={{ border: 1, p: 1.5, borderRadius: 1 }}>{children}</Box>
@@ -27,9 +82,15 @@ export default function SwapContent() {
       </CustomBox>
       <CustomBox>
         <Box>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            From
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography variant="caption" sx={{ mb: 1 }}>
+              From
+            </Typography>
+            {/* From token balance */}
+            <Typography variant="caption" sx={{ mb: 1 }}>
+              1000.000
+            </Typography>
+          </Box>
           <Box
             sx={{
               display: 'flex',
@@ -41,16 +102,11 @@ export default function SwapContent() {
               px: 2,
             }}
           >
-            <Button
-              variant="text"
-              color="inherit"
-              endIcon={<ExpandMoreIcon />}
-              disableElevation
-              onClick={() => setOpen(true)}
-            >
-              XRP
-            </Button>
-            <TextField variant="outlined" size="small" />
+            <TokenSelectButton
+              token={fromTokenSymbol}
+              onClose={() => handleSearchTokenDialogOpen('from')}
+            />
+            <SwapAmountInput />
           </Box>
         </Box>
 
@@ -72,6 +128,7 @@ export default function SwapContent() {
                 minWidth: 'auto',
                 px: 1,
               }}
+              onClick={handleSwichToken}
             >
               <SwapVertIcon />
             </IconButton>
@@ -79,9 +136,15 @@ export default function SwapContent() {
         </Box>
 
         <Box>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            To
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography variant="caption" sx={{ mb: 1 }}>
+              To
+            </Typography>
+            {/* To token balance */}
+            <Typography variant="caption" sx={{ mb: 1 }}>
+              1000.000
+            </Typography>
+          </Box>
           <Box
             sx={{
               display: 'flex',
@@ -93,26 +156,32 @@ export default function SwapContent() {
               px: 2,
             }}
           >
-            <Button
-              variant="text"
-              color="inherit"
-              endIcon={<ExpandMoreIcon />}
-              disableElevation
-              onClick={() => setOpen(true)}
-            >
-              MIMIMI
-            </Button>
-            <TextField variant="outlined" size="small" />
+            <TokenSelectButton
+              token={toTokenSymbol}
+              onClose={() => handleSearchTokenDialogOpen('to')}
+            />
+            <SwapAmountInput />
           </Box>
         </Box>
       </CustomBox>
       <CustomBox>
-        <Button variant="contained" fullWidth disableElevation>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          disableElevation
+          onClick={handleSwap}
+        >
           Swap
         </Button>
       </CustomBox>
 
-      <TokenSearchDialog open={open} onClose={() => setOpen(false)} />
+      <TokenSearchDialog
+        open={openTokenSearchDialog}
+        onClose={() => setOpenTokenSearchDialog(false)}
+        onTokenSelect={handleTokenSelect}
+        side={selectingTokenPosition}
+      />
     </Box>
   )
 }

@@ -1,18 +1,9 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
 import PageLayout from '@/components/features/layout/PageLayout'
 import TopBar from '@/components/features/navigation/TopBar'
 import WalletContextProvider from '@/providers/WalletContextProvider'
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
+import MuiProvider from '@/providers/MuiProvider'
+import '@/app/global.css'
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -26,11 +17,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <WalletContextProvider>
-          <TopBar />
-          <PageLayout>{children}</PageLayout>
-        </WalletContextProvider>
+      <body>
+        <MuiProvider>
+          <WalletContextProvider>
+            <TopBar />
+            <PageLayout>{children}</PageLayout>
+          </WalletContextProvider>
+        </MuiProvider>
       </body>
     </html>
   )
