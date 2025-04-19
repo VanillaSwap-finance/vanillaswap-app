@@ -25,6 +25,7 @@ export default function SwapContent() {
   const [selectingTokenPosition, setSelectingTokenPosition] = useState<
     'from' | 'to'
   >('from')
+  const [xrpBalance, setXrpBalance] = useState<string>('0.000')
 
   const [openTokenSearchDialog, setOpenTokenSearchDialog] = useState(false)
 
@@ -73,12 +74,16 @@ export default function SwapContent() {
   }
 
   useEffect(() => {
-    const fetchXRPBalance = async () => {
-      const balance = await getXRPBalance()
-      console.log('XRP Balance: ', balance)
+    const fetchBalance = async () => {
+      try {
+        const balance = await getXRPBalance()
+        setXrpBalance(balance)
+      } catch (error) {
+        console.error('[SwapContent] Error fetching XRP balance: ', error)
+      }
     }
 
-    fetchXRPBalance()
+    fetchBalance()
   }, [getXRPBalance])
 
   const CustomBox = ({ children }: { children: React.ReactNode }) => (
@@ -100,7 +105,7 @@ export default function SwapContent() {
                 </Typography>
                 {/* From token balance */}
                 <Typography variant="caption" sx={{ mb: 1 }}>
-                  1000.000
+                  {xrpBalance}
                 </Typography>
               </Box>
               <Box

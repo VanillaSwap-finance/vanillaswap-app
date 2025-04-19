@@ -12,16 +12,16 @@ export const useWalletBalance = () => {
 
   const { wallet } = walletContext
 
-  const getXRPBalance = async () => {
+  const getXRPBalance = async (): Promise<string> => {
     if (!wallet?.address || !wallet?.wss) {
-      throw new Error('Wallet not connected')
+      return '0.000'
     }
 
     try {
       return await XRPLBalance.getXRPBalance(wallet.address, wallet.wss)
     } catch (error) {
       console.error('[useWalletBalance] Error getting XRP balance: ', error)
-      throw error
+      return '0.000'
     }
   }
 

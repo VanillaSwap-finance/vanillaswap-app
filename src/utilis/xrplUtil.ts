@@ -27,6 +27,9 @@ export const DROPS_PER_XRP = 1000000
  * @param decimals - 小数点以下の桁数（デフォルト6桁）
  * @returns フォーマットされたXRPの文字列
  */
-export const formatXRP = (xrp: number | string, decimals: number = 6): string => {
+export const formatXRP = (
+  xrp: number | string,
+  decimals: number = 6,
+): string => {
   return Number(xrp).toFixed(decimals)
 }
