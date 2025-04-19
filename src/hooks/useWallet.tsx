@@ -1,11 +1,19 @@
-import { useEffect, useState } from 'react'
-import { isInstalled, getAddress } from '@gemwallet/api'
+import { useContext, useEffect, useState } from 'react'
+import { isInstalled, getAddress, getNetwork } from '@gemwallet/api'
 import { WALLET_TYPES } from '@/constants/wallet'
+import { getChainType, getNetworkType } from '@/utilis/walletUtil'
+import WalletContext from '@/contexts/wallet'
 
 export type WalletType = (typeof WALLET_TYPES)[keyof typeof WALLET_TYPES]
 
 export const useWallet = () => {
-  const [isConnected, setIsConnected] = useState(false)
+  const walletContext = useContext(WalletContext)
+
+  if (!walletContext) {
+    throw new Error('Wallet context not found')
+  }
+
+  const { wallet, setWallet, clearWallet } = walletContext
 
   const connect = async (walletType: WalletType) => {
     try {
@@ -17,18 +25,32 @@ export const useWallet = () => {
             throw new Error(WALLET_TYPES.GEM_WALLET + ' is not installed')
           }
 
-          const response = await getAddress()
+          const addressResponse = await getAddress()
 
-          if (response.type === 'reject') {
+          if (addressResponse.type === 'reject') {
             throw new Error('User rejected the request')
           }
 
-          if (response.type !== 'response') {
+          if (addressResponse.type !== 'response') {
             throw new Error('Unknown error')
           }
 
-          console.log('response: ', response.result?.address)
-          setIsConnected(true)
+          const networkResponse = await getNetwork()
+
+          if (networkResponse.type === 'reject') {
+            throw new Error('User rejected the request')
+          }
+
+          if (networkResponse.type !== 'response') {
+            throw new Error('Unknown error')
+          }
+
+          setWallet({
+            address: addressResponse.result?.address as string,
+            chain: getChainType(networkResponse.result?.chain as string),
+            network: getNetworkType(networkResponse.result?.network as string),
+            wss: networkResponse.result?.websocket as string,
+          })
           break
         default:
           throw new Error('Unsupported wallet type')
@@ -39,10 +61,13 @@ export const useWallet = () => {
     }
   }
 
-  const disconnect = () => {}
+  const disconnect = () => {
+    clearWallet()
+  }
 
   return {
-    isConnected,
+    isConnected: !!wallet,
+    wallet,
     connect,
     disconnect,
   }
