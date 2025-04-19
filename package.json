@@ -6,17 +6,26 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "format": "biome format --write ."
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@gemwallet/api": "^3.8.0",
+    "@mui/icons-material": "^7.0.2",
+    "@mui/material": "^7.0.2",
+    "next": "15.3.1",
+    "notistack": "^3.0.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.3.1"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@biomejs/biome": "1.9.4",
     "@types/node": "^20",
     "@types/react": "^19",
-    "@types/react-dom": "^19"
-  }
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  },
+  "packageManager": "yarn@4.9.1"
 }
