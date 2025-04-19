@@ -16,12 +16,12 @@ export class XRPLBalance {
       const response = await client.request({
         command: 'account_info',
         account: address,
-        ledger_index: 'validated'
+        ledger_index: 'validated',
       })
-      
+
       const balance = response.result.account_data.Balance
       const xrpBalance = (Number(balance) / 1000000).toString()
-      
+
       return xrpBalance
     } catch (error) {
       console.error('[XRPLBalance] Error getting XRP balance: ', error)
