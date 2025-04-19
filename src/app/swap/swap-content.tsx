@@ -8,9 +8,12 @@ import SwapAmountInput from '@/components/features/swap/SwapAmountInput'
 import TokenSelectButton from '@/components/features/swap/TokenSelectButton'
 import TokenSearchDialog from '@/components/features/swap/TokenSearchDialog'
 import { useSwap } from '@/hooks/useSwap'
+import { useWallet } from '@/hooks/useWallet'
 import { useWalletBalance } from '@/hooks/useWalletBalance'
 
 export default function SwapContent() {
+  const { isConnected } = useWallet()
+
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -88,112 +91,122 @@ export default function SwapContent() {
   )
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <CustomBox>
-        <Typography variant="h6">Swap</Typography>
-      </CustomBox>
-      <CustomBox>
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="caption" sx={{ mb: 1 }}>
-              From
-            </Typography>
-            {/* From token balance */}
-            <Typography variant="caption" sx={{ mb: 1 }}>
-              {xrpBalance}
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              backgroundColor: 'grey.200',
-              borderRadius: 1,
-              height: 60,
-              px: 2,
-            }}
-          >
-            <TokenSelectButton
-              token={fromTokenSymbol}
-              onClose={() => handleSearchTokenDialogOpen('from')}
-            />
-            <SwapAmountInput />
-          </Box>
-        </Box>
+    <>
+      {isConnected ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <CustomBox>
+            <Typography variant="h6">Swap</Typography>
+          </CustomBox>
+          <CustomBox>
+            <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="caption" sx={{ mb: 1 }}>
+                  From
+                </Typography>
+                {/* From token balance */}
+                <Typography variant="caption" sx={{ mb: 1 }}>
+                  {xrpBalance}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: 'grey.200',
+                  borderRadius: 1,
+                  height: 60,
+                  px: 2,
+                }}
+              >
+                <TokenSelectButton
+                  token={fromTokenSymbol}
+                  onClose={() => handleSearchTokenDialogOpen('from')}
+                />
+                <SwapAmountInput />
+              </Box>
+            </Box>
 
-        <Box sx={{ position: 'relative', my: 4 }}>
-          <Divider />
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              bgcolor: 'background.paper',
-              p: 0.5,
-            }}
-          >
-            <IconButton
-              color="inherit"
-              sx={{
-                minWidth: 'auto',
-                px: 1,
-              }}
-              onClick={handleSwichToken}
+            <Box sx={{ position: 'relative', my: 4 }}>
+              <Divider />
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  bgcolor: 'background.paper',
+                  p: 0.5,
+                }}
+              >
+                <IconButton
+                  color="inherit"
+                  sx={{
+                    minWidth: 'auto',
+                    px: 1,
+                  }}
+                  onClick={handleSwichToken}
+                >
+                  <SwapVertIcon />
+                </IconButton>
+              </Box>
+            </Box>
+
+            <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="caption" sx={{ mb: 1 }}>
+                  To
+                </Typography>
+                {/* To token balance */}
+                <Typography variant="caption" sx={{ mb: 1 }}>
+                  1000.000
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: 'grey.200',
+                  borderRadius: 1,
+                  height: 60,
+                  px: 2,
+                }}
+              >
+                <TokenSelectButton
+                  token={toTokenSymbol}
+                  onClose={() => handleSearchTokenDialogOpen('to')}
+                />
+                <SwapAmountInput />
+              </Box>
+            </Box>
+          </CustomBox>
+          <CustomBox>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              disableElevation
+              onClick={handleSwap}
             >
-              <SwapVertIcon />
-            </IconButton>
-          </Box>
-        </Box>
+              Swap
+            </Button>
+          </CustomBox>
 
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="caption" sx={{ mb: 1 }}>
-              To
-            </Typography>
-            {/* To token balance */}
-            <Typography variant="caption" sx={{ mb: 1 }}>
-              1000.000
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              backgroundColor: 'grey.200',
-              borderRadius: 1,
-              height: 60,
-              px: 2,
-            }}
-          >
-            <TokenSelectButton
-              token={toTokenSymbol}
-              onClose={() => handleSearchTokenDialogOpen('to')}
-            />
-            <SwapAmountInput />
-          </Box>
+          <TokenSearchDialog
+            open={openTokenSearchDialog}
+            onClose={() => setOpenTokenSearchDialog(false)}
+            onTokenSelect={handleTokenSelect}
+            side={selectingTokenPosition}
+          />
         </Box>
-      </CustomBox>
-      <CustomBox>
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          disableElevation
-          onClick={handleSwap}
-        >
-          Swap
-        </Button>
-      </CustomBox>
-
-      <TokenSearchDialog
-        open={openTokenSearchDialog}
-        onClose={() => setOpenTokenSearchDialog(false)}
-        onTokenSelect={handleTokenSelect}
-        side={selectingTokenPosition}
-      />
-    </Box>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Typography variant="h6" sx={{ textAlign: 'center' }}>
+            Wallet is not Connected
+          </Typography>
+        </Box>
+      )}
+    </>
   )
 }
