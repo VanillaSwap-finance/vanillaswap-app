@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server'
-import { z } from 'zod'
 
 import { createApiHandler } from '@/utils/axios/handler'
 import {
@@ -7,6 +6,7 @@ import {
   createErrorResponse,
 } from '@/utils/axios/response'
 import { ApiClient } from '@/utils/axios/client'
+import { decodeHexToAscii } from '@/utils/string'
 import { TokenQuerySchema, TokenResponseSchema } from './schema'
 
 const client = new ApiClient({
@@ -22,7 +22,20 @@ const handler = async (req: NextRequest) => {
 
     const { data } = await client.get('/tokens', { params })
 
-    return createSuccessResponse(TokenResponseSchema.parse(data), {
+    const parsedData = TokenResponseSchema.parse(data)
+
+    const filteredData = parsedData.tokens.filter(
+      (token) => token.meta.token.name !== undefined,
+    )
+
+    const decodedData = filteredData.map((token) => {
+      return {
+        ...token,
+        currency: decodeHexToAscii(token.currency),
+      }
+    })
+
+    return createSuccessResponse(decodedData, {
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
       },

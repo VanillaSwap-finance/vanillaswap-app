@@ -1,7 +1,7 @@
 'use client'
 
 import { Box, Avatar, Typography, Tooltip } from '@mui/material'
-import { abbreviateString } from '@/utils/stringUtil'
+import { abbreviateString } from '@/utils/string'
 import VerifiedIcon from '@mui/icons-material/Verified'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'

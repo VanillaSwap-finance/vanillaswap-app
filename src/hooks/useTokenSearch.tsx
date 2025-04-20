@@ -1,12 +1,14 @@
 import useSWRInfinite from 'swr/infinite'
-import {
-  ListTokensParams,
-  ListTokensResponse,
-  BaseToken,
-} from '@/libs/xrplmeta/types'
-import { tokensApi } from '@/libs/xrplmeta/tokens'
+import type { BaseToken } from '@/libs/xrplmeta/types'
+import type { TokenQueryParams } from '@/app/api/xrplmeta/token/schema'
 
-type SearchParams = ListTokensParams
+type SearchParams = Omit<TokenQueryParams, 'nameLike'> & {
+  name_like?: string
+  sort_by?: string
+  trust_level?: number[]
+  limit?: number
+  offset?: number
+}
 
 export interface UseTokenSearchReturn {
   tokens: BaseToken[]
@@ -26,28 +28,49 @@ export const useTokenSearch = (
 ): UseTokenSearchReturn => {
   const getKey = (
     pageIndex: number,
-    previousPageData: ListTokensResponse | null,
+    previousPageData: { tokens: BaseToken[]; count: number } | null,
   ) => {
     if (previousPageData && !previousPageData.tokens.length) return null
 
+    const apiParams: Record<string, string> = {}
+
+    if (params.name_like) {
+      apiParams.nameLike = params.name_like
+    }
+
     return {
-      ...params,
+      ...apiParams,
       limit: pageSize,
       offset: pageIndex * pageSize,
     }
   }
 
   const { data, error, size, setSize, isLoading, isValidating } =
-    useSWRInfinite<ListTokensResponse, Error>(
+    useSWRInfinite<{ tokens: BaseToken[]; count: number }, Error>(
       getKey,
-      async (key: ListTokensParams) => {
+      async (key) => {
         try {
-          const response = await tokensApi.listTokens(key)
+          const searchParams = new URLSearchParams()
+          Object.entries(key).forEach(([k, v]) => {
+            if (v !== undefined) {
+              searchParams.append(k, String(v))
+            }
+          })
+
+          const response = await fetch(
+            `/api/xrplmeta/token?${searchParams.toString()}`,
+          )
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status}`)
+          }
+
+          const data = await response.json()
+
           // レスポンスの形式を確認
-          if (!response || !Array.isArray(response.tokens)) {
+          if (!data || !Array.isArray(data.tokens)) {
             throw new Error('Invalid response format')
           }
-          return response
+          return data
         } catch (err) {
           console.error('Token search error:', err)
           throw new Error(
@@ -65,9 +88,7 @@ export const useTokenSearch = (
       },
     )
 
-  const tokens = data
-    ? data.flatMap((page: ListTokensResponse) => page.tokens)
-    : []
+  const tokens = data ? data.flatMap((page) => page.tokens) : []
   const isEmpty = data?.[0]?.tokens.length === 0
   const total = data?.[0]?.count || 0
   const hasMore = tokens.length < total
