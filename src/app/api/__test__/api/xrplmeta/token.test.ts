@@ -1,8 +1,19 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import type { Mock } from 'vitest'
+import { NextRequest } from 'next/server'
 import { GET } from '@/app/api/xrplmeta/token/route'
 import { ApiClient } from '@/utils/axios/client'
 import type { TokenResponse } from '@/app/api/xrplmeta/token/schema'
+
+vi.mock('@/utils/axios/client', () => {
+  const getMock = vi.fn()
+  
+  return {
+    ApiClient: vi.fn().mockImplementation(() => ({
+      get: getMock
+    }))
+  }
+})
 
 // フィクスチャの定義
 const createMockTokenData = (
@@ -49,18 +60,15 @@ const createRequest = (params?: Record<string, string>) => {
       url.searchParams.append(key, value)
     })
   }
-  return new Request(url)
+  return new NextRequest(url)
 }
 
 describe('XRPLMeta Token API Route', () => {
-  let mockApiClient: { get: Mock }
+  let getMock: Mock
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockApiClient = {
-      get: vi.fn(),
-    }
-    vi.mocked(ApiClient).mockImplementation(() => mockApiClient)
+    getMock = (ApiClient as unknown as { (): { get: Mock } })().get
   })
 
   describe('GET /api/xrplmeta/token', () => {
@@ -68,7 +76,7 @@ describe('XRPLMeta Token API Route', () => {
       it('should return token list with correct data and headers', async () => {
         // Arrange
         const mockTokenData = createMockTokenData()
-        mockApiClient.get.mockResolvedValueOnce({ data: mockTokenData })
+        getMock.mockResolvedValueOnce({ data: mockTokenData })
 
         // Act
         const response = await GET(createRequest())
@@ -76,10 +84,7 @@ describe('XRPLMeta Token API Route', () => {
 
         // Assert
         expect(response.status).toBe(200)
-        expect(data).toEqual({
-          success: true,
-          data: mockTokenData,
-        })
+        expect(data).toEqual(mockTokenData)
         expect(response.headers.get('Cache-Control')).toBe(
           'public, s-maxage=60, stale-while-revalidate=300',
         )
@@ -88,13 +93,13 @@ describe('XRPLMeta Token API Route', () => {
       it('should handle search query parameter correctly', async () => {
         // Arrange
         const mockTokenData = createMockTokenData({ count: 0, tokens: [] })
-        mockApiClient.get.mockResolvedValueOnce({ data: mockTokenData })
+        getMock.mockResolvedValueOnce({ data: mockTokenData })
 
         // Act
         await GET(createRequest({ nameLike: 'test' }))
 
         // Assert
-        expect(mockApiClient.get).toHaveBeenCalledWith('/tokens', {
+        expect(getMock).toHaveBeenCalledWith('/tokens', {
           params: { nameLike: 'test' },
         })
       })
