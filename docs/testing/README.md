@@ -5,14 +5,31 @@
 ### 1. ライブラリ的な機能 → `src/libs/` 配下
 独立性が高く、再利用可能なコードのテスト
 
-```
-src/libs/xrplmeta/
-├── api.ts
-├── tokens.ts
-├── __tests__/          # テストファイル
-│   └── tokens.test.ts
-└── __fixtures__/       # テストデータ
-    └── tokens.ts
+```text
+src/libs/
+├── xrplmeta/
+│   ├── api.ts
+│   ├── tokens.ts
+│   ├── __tests__/          # テストファイル
+│   │   └── tokens.test.ts
+│   └── __fixtures__/       # テストデータ
+│       └── tokens.ts
+│
+├── binance/
+│   ├── api.ts
+│   ├── market.ts
+│   ├── __tests__/
+│   │   └── market.test.ts
+│   └── __fixtures__/
+│       └── market.ts
+│
+└── xrpl/
+    ├── api.ts
+    ├── account.ts
+    ├── __tests__/
+    │   └── account.test.ts
+    └── __fixtures__/
+        └── account.ts
 ```
 
 **対象:**
@@ -20,10 +37,29 @@ src/libs/xrplmeta/
 - ユーティリティ関数
 - 再利用可能なロジック
 
-### 2. アプリケーション機能 → `tests/` 配下
+### 2. APIルート → `__tests__/api/` 配下
+Next.jsのAPIルートのテスト
+
+```text
+__tests__/api/
+├── xrplmeta/
+│   ├── tokens.test.ts
+│   └── market.test.ts
+├── binance/
+│   └── market.test.ts
+└── xrpl/
+    └── account.test.ts
+```
+
+**対象:**
+- APIルートのハンドラ
+- エラーハンドリング
+- キャッシュ制御
+
+### 3. アプリケーション機能 → `tests/` 配下
 アプリケーション固有の機能のテスト
 
-```
+```text
 tests/
 ├── components/        # UIコンポーネント
 ├── hooks/            # カスタムフック
@@ -40,29 +76,59 @@ tests/
 ### 1. APIクライアントのテスト
 ```typescript
 // src/libs/xrplmeta/__tests__/tokens.test.ts
-import { TokensApi } from '../tokens';
+import { XRPLMetaClient } from '../api';
 import { mockToken } from '../__fixtures__/tokens';
 
-describe('TokensApi', () => {
-  let api: TokensApi;
+describe('XRPLMetaClient', () => {
+  let client: XRPLMetaClient;
 
   beforeEach(() => {
-    api = new TokensApi();
+    client = new XRPLMetaClient();
   });
 
   it('should fetch tokens with correct parameters', async () => {
     const params = { name_like: 'XRP' };
-    const result = await api.listTokens(params);
+    const result = await client.listTokens(params);
     expect(result.tokens).toBeDefined();
   });
 
-  it('should handle errors', async () => {
-    // エラーケースのテスト
+  it('should handle rate limit errors', async () => {
+    // レート制限エラーのテスト
   });
 });
 ```
 
-### 2. Reactコンポーネントのテスト
+### 2. APIルートのテスト
+```typescript
+// __tests__/api/xrplmeta/tokens.test.ts
+import { GET } from '@/app/api/xrplmeta/tokens/route';
+
+describe('XRPLMeta Tokens API Route', () => {
+  it('should return tokens data', async () => {
+    const request = new Request('http://localhost/api/xrplmeta/tokens');
+    const response = await GET(request);
+    const data = await response.json();
+    
+    expect(response.status).toBe(200);
+    expect(data.tokens).toBeDefined();
+  });
+
+  it('should handle API errors', async () => {
+    // APIエラーのテスト
+  });
+
+  it('should set correct cache headers', async () => {
+    const request = new Request('http://localhost/api/xrplmeta/tokens');
+    const response = await GET(request);
+    
+    expect(response.headers.get('Cache-Control')).toBe(
+      's-maxage=60, stale-while-revalidate'
+    );
+  });
+});
+```
+
+### 3. コンポーネントのテスト
 ```typescript
 // tests/components/TokenCard.test.tsx
 import { render, screen } from '@testing-library/react';
@@ -76,33 +142,15 @@ describe('TokenCard', () => {
 });
 ```
 
-### 3. カスタムフックのテスト
-```typescript
-// tests/hooks/useTokenSearch.test.ts
-import { renderHook, act } from '@testing-library/react-hooks';
-import { useTokenSearch } from '@/hooks/useTokenSearch';
-
-describe('useTokenSearch', () => {
-  it('should search tokens', async () => {
-    const { result } = renderHook(() => useTokenSearch());
-    
-    await act(async () => {
-      await result.current.searchTokens('XRP');
-    });
-
-    expect(result.current.tokens).toHaveLength(1);
-  });
-});
-```
-
 ## テストコマンド
 
 ```bash
 # 全テストの実行
 yarn test
 
-# 特定のテストの実行
-yarn test src/libs/xrplmeta
+# 特定のAPIのテストを実行
+yarn test api/xrplmeta
+yarn test api/binance
 
 # カバレッジレポートの生成
 yarn test:coverage
@@ -128,8 +176,11 @@ describe('機能名', () => {
 
 2. **モックの使用**
 ```typescript
+// 外部APIクライアントのモック
 vi.mock('@/libs/xrplmeta/api', () => ({
-  fetchTokens: vi.fn().mockResolvedValue({ tokens: [] })
+  XRPLMetaClient: vi.fn().mockImplementation(() => ({
+    listTokens: vi.fn().mockResolvedValue({ tokens: [] })
+  }))
 }));
 ```
 
@@ -142,3 +193,23 @@ export const mockToken = {
   // ... 必要なデータ
 };
 ```
+```
+
+主な更新ポイント：
+
+1. 🏗 **ディレクトリ構造**
+   - 外部API単位でのテストディレクトリ構成
+   - APIルートテスト用の専用ディレクトリ追加
+
+2. 📝 **テスト例**
+   - APIクライアントのテストを外部API単位に更新
+   - APIルートのテスト例を追加
+   - キャッシュヘッダーのテスト例を追加
+
+3. 🔧 **テストコマンド**
+   - 外部API単位でのテスト実行コマンドを追加
+
+4. 🎯 **モック例**
+   - 外部APIクライアントのモック例を更新
+
+これらの変更により、新しいAPI設計方針に合わせたテスト構造と実装例を提供できます！✨

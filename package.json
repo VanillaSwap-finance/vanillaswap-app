@@ -16,12 +16,16 @@
     "@gemwallet/api": "^3.8.0",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
+    "@types/lodash": "^4.17.16",
+    "axios": "^1.8.4",
+    "lodash": "^4.17.21",
     "next": "15.3.1",
     "notistack": "^3.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "swr": "^2.3.3",
-    "xrpl": "^4.2.0"
+    "xrpl": "^4.2.0",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
