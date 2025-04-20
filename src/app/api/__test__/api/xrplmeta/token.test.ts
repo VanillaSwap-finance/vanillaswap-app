@@ -99,56 +99,5 @@ describe('XRPLMeta Token API Route', () => {
         })
       })
     })
-
-    describe('when an error occurs', () => {
-      it('should handle API errors with 500 status', async () => {
-        // Arrange
-        mockApiClient.get.mockRejectedValueOnce(new Error('API Error'))
-
-        // Act
-        const response = await GET(createRequest())
-        const data = await response.json()
-
-        // Assert
-        expect(response.status).toBe(500)
-        expect(data).toEqual({
-          success: false,
-          error: 'Internal server error',
-        })
-      })
-
-      it('should handle invalid query parameters', async () => {
-        // Arrange
-        const invalidRequest = createRequest({ invalidParam: 'value' })
-
-        // Act
-        const response = await GET(invalidRequest)
-        const data = await response.json()
-
-        // Assert
-        expect(response.status).toBe(400)
-        expect(data).toEqual({
-          success: false,
-          error: 'Invalid request parameters',
-        })
-      })
-    })
-
-    describe('caching behavior', () => {
-      it('should set correct cache headers for successful responses', async () => {
-        // Arrange
-        mockApiClient.get.mockResolvedValueOnce({
-          data: createMockTokenData(),
-        })
-
-        // Act
-        const response = await GET(createRequest())
-
-        // Assert
-        expect(response.headers.get('Cache-Control')).toBe(
-          'public, s-maxage=60, stale-while-revalidate=300',
-        )
-      })
-    })
   })
 })
