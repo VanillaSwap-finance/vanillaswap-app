@@ -14,15 +14,19 @@ export class TokensApi extends XRPLMetaApiClient {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
         if (Array.isArray(value)) {
-          searchParams.append(key, value.join(','))
+          searchParams.set(key, value.join(','))
         } else {
           searchParams.append(key, String(value))
         }
       }
     })
 
+    let url = `${XRPLMETA_API_CONFIG.endpoints.tokens}?`
+    
+    const paramsString = searchParams.toString().replace(/%2C/g, ',')
+    
     return this.fetch<ListTokensResponse>(
-      `${XRPLMETA_API_CONFIG.endpoints.tokens}?${searchParams.toString()}`,
+      `${url}${paramsString}`,
     )
   }
 

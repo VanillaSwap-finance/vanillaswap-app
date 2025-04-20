@@ -1,33 +1,77 @@
-import useSWR, { SWRConfiguration } from 'swr'
+import useSWRInfinite from 'swr/infinite'
+import {
+  ListTokensParams,
+  ListTokensResponse,
+  BaseToken,
+} from '@/libs/xrplmeta/types'
+import { tokensApi } from '@/libs/xrplmeta/tokens'
 
-type SearchParams = {
-  name_like?: string
+type SearchParams = ListTokensParams
+
+export interface UseTokenSearchReturn {
+  tokens: BaseToken[]
+  isLoading: boolean
+  isError: boolean
+  isEmpty: boolean
+  total: number
+  loadMore: () => void
+  isLoadingMore: boolean
+  hasMore: boolean
+  error?: Error
 }
 
-const BASE_URL = 'https://s1.xrplmeta.org'
+export const useTokenSearch = (
+  params: SearchParams = {},
+  pageSize = 20,
+): UseTokenSearchReturn => {
+  const getKey = (
+    pageIndex: number,
+    previousPageData: ListTokensResponse | null,
+  ) => {
+    if (previousPageData && !previousPageData.tokens.length) return null
 
-const fetcher = async (url: string) => {
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`検索に失敗しました (${response.status})`)
-  }
-  return response.json()
-}
-
-const buildSearchUrl = (params: SearchParams): string => {
-  const searchParams = new URLSearchParams()
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined) {
-      if (Array.isArray(value)) {
-        searchParams.append(key, value.join(','))
-      } else {
-        searchParams.append(key, String(value))
-      }
+    return {
+      ...params,
+      limit: pageSize,
+      offset: pageIndex * pageSize,
     }
-  })
-  return `${BASE_URL}/tokens?${searchParams.toString()}`
-}
+  }
 
-export const useTokenSearch = () => {
-  return {}
+  const { data, error, size, setSize, isLoading, isValidating } =
+    useSWRInfinite<ListTokensResponse, Error>(
+      getKey,
+      async (key: ListTokensParams) => {
+        try {
+          return await tokensApi.listTokens(key)
+        } catch (err) {
+          throw new Error(
+            `トークン検索に失敗しました: ${err instanceof Error ? err.message : String(err)}`,
+          )
+        }
+      },
+      {
+        revalidateFirstPage: false,
+        revalidateOnFocus: false,
+      },
+    )
+
+  const tokens = data
+    ? data.flatMap((page: ListTokensResponse) => page.tokens)
+    : []
+  const isEmpty = data?.[0]?.tokens.length === 0
+  const total = data?.[0]?.count || 0
+  const hasMore = tokens.length < total
+  const isLoadingMore = isValidating && !!data && size > 1
+
+  return {
+    tokens,
+    isLoading,
+    isError: !!error,
+    error,
+    isEmpty,
+    total,
+    loadMore: () => setSize(size + 1),
+    isLoadingMore,
+    hasMore,
+  }
 }
