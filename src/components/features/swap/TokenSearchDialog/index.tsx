@@ -13,7 +13,7 @@ import SwapTokenListItem from '@/components/features/swap/TokenSearchDialog/Swap
 import { useTokenSearch } from '@/hooks/useTokenSearch'
 import { useState, useCallback } from 'react'
 import { debounce } from 'lodash'
-import { formatNumber } from '@/utils/numberUtil'
+import { formatNumber, parseNumber } from '@/utils/number'
 
 interface TokenSearchDialogProps {
   open: boolean
@@ -46,7 +46,7 @@ export default function TokenSearchDialog({
     {
       name_like: searchKeyword,
       sort_by: 'trustlines',
-      trust_level: [1, 2, 3],
+      trust_level: [1],
     },
     20,
   )
@@ -134,7 +134,7 @@ export default function TokenSearchDialog({
           {tokens.map((token) => (
             <SwapTokenListItem
               key={`${token.currency}-${token.issuer}`}
-              symbol={token.meta.token.name}
+              symbol={token.currency}
               issuer={token.issuer}
               onTokenSelect={onTokenSelect}
               side={side}
@@ -143,7 +143,10 @@ export default function TokenSearchDialog({
               metrics={{
                 holders: formatNumber(token.metrics.holders),
                 trustlines: formatNumber(token.metrics.trustlines),
-                marketcap: formatNumber(parseFloat(token.metrics.marketcap), 2),
+                marketcap: formatNumber(
+                  parseNumber(token.metrics.marketcap),
+                  2,
+                ),
               }}
               description={token.meta.token.description}
             />

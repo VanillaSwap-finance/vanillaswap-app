@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { isInstalled, getAddress, getNetwork } from '@gemwallet/api'
 import { WALLET_TYPES } from '@/constants/wallet'
-import { getChainType, getNetworkType } from '@/utilis/walletUtil'
+import { getChainType, getNetworkType } from '@/utils/wallet'
 import WalletContext from '@/contexts/wallet'
 
 export type WalletType = (typeof WALLET_TYPES)[keyof typeof WALLET_TYPES]

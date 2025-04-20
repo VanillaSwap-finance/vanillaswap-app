@@ -7,11 +7,11 @@ import type { TokenResponse } from '@/app/api/xrplmeta/token/schema'
 
 vi.mock('@/utils/axios/client', () => {
   const getMock = vi.fn()
-  
+
   return {
     ApiClient: vi.fn().mockImplementation(() => ({
-      get: getMock
-    }))
+      get: getMock,
+    })),
   }
 })
 
