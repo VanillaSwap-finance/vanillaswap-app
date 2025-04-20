@@ -42,8 +42,14 @@ export const useTokenSearch = (
       getKey,
       async (key: ListTokensParams) => {
         try {
-          return await tokensApi.listTokens(key)
+          const response = await tokensApi.listTokens(key)
+          // レスポンスの形式を確認
+          if (!response || !Array.isArray(response.tokens)) {
+            throw new Error('Invalid response format')
+          }
+          return response
         } catch (err) {
+          console.error('Token search error:', err)
           throw new Error(
             `トークン検索に失敗しました: ${err instanceof Error ? err.message : String(err)}`,
           )
@@ -52,6 +58,10 @@ export const useTokenSearch = (
       {
         revalidateFirstPage: false,
         revalidateOnFocus: false,
+        dedupingInterval: 5000, // 5秒間は同じリクエストをキャッシュ
+        errorRetryCount: 3, // エラー時の再試行回数
+        errorRetryInterval: 1000, // エラー時の再試行間隔（ミリ秒）
+        shouldRetryOnError: true, // エラー時に再試行を行う
       },
     )
 

@@ -22,12 +22,10 @@ export class TokensApi extends XRPLMetaApiClient {
     })
 
     let url = `${XRPLMETA_API_CONFIG.endpoints.tokens}?`
-    
+
     const paramsString = searchParams.toString().replace(/%2C/g, ',')
-    
-    return this.fetch<ListTokensResponse>(
-      `${url}${paramsString}`,
-    )
+
+    return this.fetch<ListTokensResponse>(`${url}${paramsString}`)
   }
 
   // Get Token

@@ -6,8 +6,14 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  CircularProgress,
+  Typography,
 } from '@mui/material'
 import SwapTokenListItem from '@/components/features/swap/TokenSearchDialog/SwapTokenListItem'
+import { useTokenSearch } from '@/hooks/useTokenSearch'
+import { useState, useCallback } from 'react'
+import { debounce } from 'lodash'
+import { formatNumber } from '@/utils/numberUtil'
 
 interface TokenSearchDialogProps {
   open: boolean
@@ -26,52 +32,147 @@ export default function TokenSearchDialog({
   onTokenSelect,
   side,
 }: TokenSearchDialogProps) {
+  const [searchKeyword, setSearchKeyword] = useState('')
+
+  const {
+    tokens,
+    isLoading,
+    isError,
+    isEmpty,
+    loadMore,
+    hasMore,
+    isLoadingMore,
+  } = useTokenSearch(
+    {
+      name_like: searchKeyword,
+      sort_by: 'trustlines',
+      trust_level: [1, 2, 3],
+    },
+    20,
+  )
+
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setSearchKeyword(value)
+    }, 300),
+    [],
+  )
+
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
+      if (scrollHeight - scrollTop <= clientHeight * 1.5) {
+        if (hasMore && !isLoadingMore) {
+          loadMore()
+        }
+      }
+    },
+    [hasMore, isLoadingMore, loadMore],
+  )
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Search for a token</DialogTitle>
-      <DialogContent sx={{ px: 0, height: '500px', position: 'relative' }}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: { height: '80vh', maxHeight: 600 },
+      }}
+    >
+      <DialogTitle>
+        <Typography variant="h6" component="div">
+          トークンを選択
+        </Typography>
+      </DialogTitle>
+      <DialogContent sx={{ p: 0 }}>
         <Box
           sx={{
             px: 2,
-            pb: 3,
+            py: 2,
             position: 'sticky',
             top: 0,
             backgroundColor: 'background.paper',
             zIndex: 2,
+            borderBottom: 1,
+            borderColor: 'divider',
           }}
         >
           <TextField
-            label="Search"
-            placeholder="Search by name"
-            sx={{
-              mt: 1,
-            }}
+            placeholder="トークン名で検索..."
+            onChange={(e) => debouncedSearch(e.target.value)}
             fullWidth
+            size="small"
+            autoFocus
           />
         </Box>
+
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
+            height: 'calc(100% - 80px)',
             overflow: 'auto',
-            flex: 1,
-            position: 'relative',
-            zIndex: 1,
-            mt: 1,
           }}
+          onScroll={handleScroll}
         >
+          {/* XRP */}
           <SwapTokenListItem
             symbol="XRP"
             issuer="XRP"
             onTokenSelect={onTokenSelect}
             side={side}
+            icon="/images/xrp.png"
+            trustLevel={3}
+            metrics={{
+              holders: '-',
+              trustlines: '-',
+              marketcap: '-',
+            }}
+            description="XRPLのネイティブ通貨"
           />
-          <SwapTokenListItem
-            symbol="Mimimi"
-            issuer="rMTnMGHk7k7brMC3vUNn7uP9t7WtLEdZUw"
-            onTokenSelect={onTokenSelect}
-            side={side}
-          />
+
+          {/* 検索結果 */}
+          {tokens.map((token) => (
+            <SwapTokenListItem
+              key={`${token.currency}-${token.issuer}`}
+              symbol={token.meta.token.name}
+              issuer={token.issuer}
+              onTokenSelect={onTokenSelect}
+              side={side}
+              icon={token.meta.token.icon}
+              trustLevel={token.meta.token.trust_level}
+              metrics={{
+                holders: formatNumber(token.metrics.holders),
+                trustlines: formatNumber(token.metrics.trustlines),
+                marketcap: formatNumber(parseFloat(token.metrics.marketcap), 2),
+              }}
+              description={token.meta.token.description}
+            />
+          ))}
+
+          {/* ローディング状態 */}
+          {(isLoading || isLoadingMore) && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+              <CircularProgress size={24} />
+            </Box>
+          )}
+
+          {/* エラー状態 */}
+          {isError && (
+            <Box sx={{ p: 2, textAlign: 'center' }}>
+              <Typography color="error">
+                トークンの検索中にエラーが発生しました
+              </Typography>
+            </Box>
+          )}
+
+          {/* 検索結果なし */}
+          {isEmpty && !isLoading && (
+            <Box sx={{ p: 2, textAlign: 'center' }}>
+              <Typography color="text.secondary">
+                該当するトークンが見つかりませんでした
+              </Typography>
+            </Box>
+          )}
         </Box>
       </DialogContent>
     </Dialog>
