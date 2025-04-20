@@ -8,4 +8,4 @@ yarn test
 yarn test:watch
 ```
 
-詳細なテスト仕様については、[テストガイドライン](/docs/testing/README.md) を参照してください。
+詳細なテスト仕様については、[テストガイドライン](../testing/README.md) を参照してください。
