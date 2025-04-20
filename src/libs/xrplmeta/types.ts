@@ -1,23 +1,3 @@
-// 共通の型定義
-export type AssetClass = 'fiat' | 'commodity' | 'equity' | 'cryptocurrency'
-export type WebLinkType =
-  | 'website'
-  | 'socialmedia'
-  | 'support'
-  | 'sourcecode'
-  | 'whitepaper'
-  | 'audit'
-  | 'report'
-export type SortBy =
-  | 'trustlines'
-  | 'holders'
-  | 'supply'
-  | 'marketcap'
-  | `${'trustlines' | 'holders' | 'supply' | 'marketcap'}_delta_24h`
-  | `${'trustlines' | 'holders' | 'supply' | 'marketcap'}_percent_24h`
-  | `${'trustlines' | 'holders' | 'supply' | 'marketcap'}_delta_7d`
-  | `${'trustlines' | 'holders' | 'supply' | 'marketcap'}_percent_7d`
-
 // 基本的なトークン情報の型
 export interface BaseToken {
   currency: string
@@ -69,27 +49,13 @@ export interface TokenMetrics {
   takers_7d: string
 }
 
-// List Tokens のパラメータと応答の型
-export interface ListTokensParams {
-  name_like?: string
-  expand_meta?: boolean
-  include_changes?: boolean
-  sort_by?: SortBy
-  trust_level?: (0 | 1 | 2 | 3)[]
-  limit?: number
-  offset?: number
-}
-
-export interface ListTokensResponse {
-  tokens: BaseToken[]
-  count: number
-}
-
-// Get Token のパラメータと応答の型
-export interface GetTokenParams {
-  identifier: string
-  include_sources?: boolean
-  include_changes?: boolean
-}
-
-export type GetTokenResponse = BaseToken
+// 共通の型定義
+export type AssetClass = 'fiat' | 'commodity' | 'equity' | 'cryptocurrency'
+export type WebLinkType =
+  | 'website'
+  | 'socialmedia'
+  | 'support'
+  | 'sourcecode'
+  | 'whitepaper'
+  | 'audit'
+  | 'report'
