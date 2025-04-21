@@ -39,7 +39,7 @@ export const TokenResponseSchema = z.object({
           name: z.string().optional(),
           description: z.string().optional(),
           icon: z.string().optional(),
-          kyc: z.boolean(),
+          kyc: z.boolean().optional(),
           trust_lebel: z.number().optional(),
           weblinks: z
             .array(

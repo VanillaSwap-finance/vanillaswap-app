@@ -6,8 +6,8 @@ import {
   createErrorResponse,
 } from '@/utils/axios/response'
 import { ApiClient } from '@/utils/axios/client'
-import { decodeHexToAscii } from '@/utils/string'
 import { TokenQuerySchema, TokenResponseSchema } from './schema'
+import { decodeHexToAscii } from '@/utils/string'
 
 const client = new ApiClient({
   baseURL: process.env.XRPLMETA_API_URL ?? 'https://s1.xrplmeta.org',
@@ -24,18 +24,18 @@ const handler = async (req: NextRequest) => {
 
     const parsedData = TokenResponseSchema.parse(data)
 
-    const filteredData = parsedData.tokens.filter(
+    parsedData.tokens = parsedData.tokens.filter(
       (token) => token.meta.token.name !== undefined,
     )
 
-    const decodedData = filteredData.map((token) => {
+    parsedData.tokens = parsedData.tokens.map((token) => {
       return {
         ...token,
         currency: decodeHexToAscii(token.currency),
       }
     })
 
-    return createSuccessResponse(decodedData, {
+    return createSuccessResponse(parsedData, {
       headers: {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
       },
