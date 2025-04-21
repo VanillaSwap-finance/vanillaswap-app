@@ -42,10 +42,10 @@ const createMockTokenData = (
         price: '1',
         volume_24h: '100',
         volume_7d: '700',
-        exchanges_24h: 10,
-        exchanges_7d: 70,
-        takers_24h: 5,
-        takers_7d: 35,
+        exchanges_24h: '10',
+        exchanges_7d: '70',
+        takers_24h: '5',
+        takers_7d: '35',
       },
     },
   ],
@@ -96,11 +96,11 @@ describe('XRPLMeta Token API Route', () => {
         getMock.mockResolvedValueOnce({ data: mockTokenData })
 
         // Act
-        await GET(createRequest({ nameLike: 'test' }))
+        await GET(createRequest({ name_like: 'test' }))
 
         // Assert
         expect(getMock).toHaveBeenCalledWith('/tokens', {
-          params: { nameLike: 'test' },
+          params: { name_like: 'test' },
         })
       })
     })

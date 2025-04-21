@@ -35,7 +35,7 @@ export const useTokenSearch = (
     const apiParams: Record<string, string> = {}
 
     if (params.name_like) {
-      apiParams.nameLike = params.name_like
+      apiParams.name_like = params.name_like
     }
 
     return {
