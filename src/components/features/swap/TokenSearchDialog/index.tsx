@@ -13,7 +13,7 @@ import SwapTokenListItem from '@/components/features/swap/TokenSearchDialog/Swap
 import { useTokenSearch } from '@/hooks/useTokenSearch'
 import { useState, useCallback } from 'react'
 import { debounce } from 'lodash'
-import { formatNumber, parseNumber } from '@/utils/number'
+import { formatNumber, formatTokenPrice } from '@/utils/number'
 
 interface TokenSearchDialogProps {
   open: boolean
@@ -111,21 +111,21 @@ export default function TokenSearchDialog({
           sx={{
             height: 'calc(100% - 80px)',
             overflow: 'auto',
+            py: 1,
           }}
           onScroll={handleScroll}
         >
           {/* XRP */}
           <SwapTokenListItem
             symbol="XRP"
+            name="XRP"
             issuer="XRP"
             onTokenSelect={onTokenSelect}
             side={side}
             icon="/images/xrp.png"
-            trustLevel={3}
             metrics={{
               holders: '-',
-              trustlines: '-',
-              marketcap: '-',
+              price: '-',
             }}
             description="XRPLのネイティブ通貨"
           />
@@ -135,18 +135,14 @@ export default function TokenSearchDialog({
             <SwapTokenListItem
               key={`${token.currency}-${token.issuer}`}
               symbol={token.currency}
+              name={token.meta.token.name}
               issuer={token.issuer}
               onTokenSelect={onTokenSelect}
               side={side}
               icon={token.meta.token.icon}
-              trustLevel={token.meta.token.trust_level}
               metrics={{
                 holders: formatNumber(token.metrics.holders),
-                trustlines: formatNumber(token.metrics.trustlines),
-                marketcap: formatNumber(
-                  parseNumber(token.metrics.marketcap),
-                  2,
-                ),
+                price: formatTokenPrice(Number(token.metrics.price)),
               }}
               description={token.meta.token.description}
             />

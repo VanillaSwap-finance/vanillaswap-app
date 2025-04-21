@@ -2,14 +2,12 @@
 
 import { Box, Avatar, Typography, Tooltip } from '@mui/material'
 import { abbreviateString } from '@/utils/string'
-import VerifiedIcon from '@mui/icons-material/Verified'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import PeopleOutlineIcon from '@mui/icons-material/PeopleOutline'
-import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined'
-import ShowChartIcon from '@mui/icons-material/ShowChart'
 
 interface SwapTokenListItemProps {
   symbol: string
+  name: string
   issuer: string
   onTokenSelect: (
     symbol: string,
@@ -18,44 +16,29 @@ interface SwapTokenListItemProps {
   ) => void
   side: 'from' | 'to'
   icon?: string
-  trustLevel?: 0 | 1 | 2 | 3
   metrics?: {
     holders: string
-    trustlines: string
-    marketcap: string
+    price: string
   }
   description?: string
 }
 
 export default function SwapTokenListItem({
   symbol,
+  name,
   issuer,
   onTokenSelect,
   side,
   icon,
-  trustLevel = 0,
   metrics,
   description,
 }: SwapTokenListItemProps) {
-  const getTrustLevelColor = (level: number) => {
-    switch (level) {
-      case 3:
-        return 'success.main'
-      case 2:
-        return 'info.main'
-      case 1:
-        return 'warning.main'
-      default:
-        return 'text.disabled'
-    }
-  }
-
   return (
     <Box
       onClick={() => onTokenSelect(symbol, issuer, side)}
       sx={{
         px: 2,
-        py: 1.5,
+        py: 1.2,
         '&:hover': {
           backgroundColor: 'action.hover',
         },
@@ -73,36 +56,37 @@ export default function SwapTokenListItem({
         {/* 左側：トークン基本情報 */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Avatar
-            src={icon || '/images/default-token.png'}
+            src={
+              icon === 'https://s1.xrplmeta.org/icon/null.null'
+                ? '/images/default-token.svg'
+                : icon
+            }
             alt={symbol}
-            sx={{ width: 32, height: 32 }}
+            sx={{ width: 38, height: 38 }}
           />
-          <Box>
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.2 }}
-            >
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                 {symbol}
               </Typography>
-              {trustLevel > 0 && (
-                <Tooltip title={`信頼レベル: ${trustLevel}`} arrow>
-                  <VerifiedIcon
-                    sx={{
-                      fontSize: 16,
-                      color: getTrustLevelColor(trustLevel),
-                    }}
-                  />
-                </Tooltip>
-              )}
+              <Typography variant="caption" sx={{ ml: 0.5 }}>
+                {name}
+              </Typography>
               {description && (
                 <Tooltip title={description} arrow>
                   <InfoOutlinedIcon
-                    sx={{ fontSize: 14, color: 'text.secondary' }}
+                    sx={{ fontSize: 16, color: 'text.secondary', mb: 0.5 }}
                   />
                 </Tooltip>
               )}
             </Box>
-            <Typography variant="caption" color="text.secondary">
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                lineHeight: 1,
+              }}
+            >
               {abbreviateString(issuer)}
             </Typography>
           </Box>
@@ -111,7 +95,7 @@ export default function SwapTokenListItem({
         {/* 右側：メトリクス */}
         {metrics && (
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Tooltip title="ホルダー数" arrow>
+            <Tooltip title="Holders" arrow>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <PeopleOutlineIcon
                   sx={{ fontSize: 14, color: 'text.secondary' }}
@@ -121,21 +105,10 @@ export default function SwapTokenListItem({
                 </Typography>
               </Box>
             </Tooltip>
-            <Tooltip title="トラストライン数" arrow>
+            <Tooltip title="Price" arrow>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <AccountBalanceWalletOutlinedIcon
-                  sx={{ fontSize: 14, color: 'text.secondary' }}
-                />
                 <Typography variant="caption" color="text.secondary">
-                  {metrics.trustlines}
-                </Typography>
-              </Box>
-            </Tooltip>
-            <Tooltip title="時価総額" arrow>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <ShowChartIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                <Typography variant="caption" color="text.secondary">
-                  ${metrics.marketcap}
+                  $ {metrics.price}
                 </Typography>
               </Box>
             </Tooltip>

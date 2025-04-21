@@ -86,3 +86,31 @@ export const formatNumber = (
     maximumFractionDigits: decimals,
   }).format(roundedValue)
 }
+
+/**
+ * トークン価格のフォーマット処理
+ * @param price - フォーマットする価格
+ * @returns フォーマットされた価格文字列
+ */
+export const formatTokenPrice = (price: number): string => {
+  // 無効な値のチェック
+  if (!price || isNaN(price)) return '0'
+
+  // 価格の大きさに応じて小数点以下の桁数を調整
+  let decimals: number
+  if (price >= 1000) {
+    decimals = 2 // 1000以上は小数点2桁まで (例: 40770.22)
+  } else if (price >= 1) {
+    decimals = 4 // 1以上は小数点4桁まで (例: 123.4567)
+  } else if (price >= 0.0001) {
+    decimals = 6 // 0.0001以上は小数点6桁まで (例: 0.123456)
+  } else {
+    decimals = 10 // 非常に小さい値は小数点10桁まで (例: 0.0000001234)
+  }
+
+  // 指定した桁数でフォーマット
+  const formattedPrice = formatNumber(price, decimals)
+
+  // 末尾の不要な0を削除
+  return formattedPrice.replace(/\.?0+$/, '')
+}
