@@ -99,7 +99,7 @@ export default function TokenSearchDialog({
           }}
         >
           <TextField
-            placeholder="トークン名で検索..."
+            placeholder="Search token..."
             onChange={(e) => debouncedSearch(e.target.value)}
             fullWidth
             size="small"

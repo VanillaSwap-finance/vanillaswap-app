@@ -1,4 +1,5 @@
 import useSWRInfinite from 'swr/infinite'
+import { TOKEN_SEARCH, API_ENDPOINTS } from '@/constants/token'
 import type { BaseToken } from '@/libs/xrplmeta/types'
 import type { TokenQueryParams } from '@/app/api/xrplmeta/token/schema'
 
@@ -24,7 +25,7 @@ export interface UseTokenSearchReturn {
 
 export const useTokenSearch = (
   params: SearchParams = {},
-  pageSize = 20,
+  pageSize = TOKEN_SEARCH.DEFAULT_PAGE_SIZE,
 ): UseTokenSearchReturn => {
   const getKey = (
     pageIndex: number,
@@ -58,7 +59,7 @@ export const useTokenSearch = (
           })
 
           const response = await fetch(
-            `/api/xrplmeta/token?${searchParams.toString()}`,
+            `${API_ENDPOINTS.TOKEN_SEARCH}?${searchParams.toString()}`,
           )
           if (!response.ok) {
             throw new Error(`API error: ${response.status}`)
@@ -74,17 +75,17 @@ export const useTokenSearch = (
         } catch (err) {
           console.error('Token search error:', err)
           throw new Error(
-            `トークン検索に失敗しました: ${err instanceof Error ? err.message : String(err)}`,
+            `Failed to search tokens: ${err instanceof Error ? err.message : String(err)}`,
           )
         }
       },
       {
         revalidateFirstPage: false,
         revalidateOnFocus: false,
-        dedupingInterval: 5000, // 5秒間は同じリクエストをキャッシュ
-        errorRetryCount: 3, // エラー時の再試行回数
-        errorRetryInterval: 1000, // エラー時の再試行間隔（ミリ秒）
-        shouldRetryOnError: true, // エラー時に再試行を行う
+        dedupingInterval: TOKEN_SEARCH.CACHE_INTERVAL,
+        errorRetryCount: TOKEN_SEARCH.ERROR_RETRY_COUNT,
+        errorRetryInterval: TOKEN_SEARCH.ERROR_RETRY_INTERVAL,
+        shouldRetryOnError: true,
       },
     )
 
