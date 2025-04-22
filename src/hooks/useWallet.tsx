@@ -2,6 +2,8 @@ import { useContext } from 'react'
 import { isInstalled, getAddress, getNetwork } from '@gemwallet/api'
 import { WALLET_TYPES } from '@/constants/wallet'
 import { getChainType, getNetworkType } from '@/utils/wallet'
+import { handleError, logError } from '@/utils/error'
+import { ErrorType } from '@/types/error'
 import WalletContext from '@/contexts/wallet'
 
 export type WalletType = (typeof WALLET_TYPES)[keyof typeof WALLET_TYPES]
@@ -56,8 +58,12 @@ export const useWallet = () => {
           throw new Error('Unsupported wallet type')
       }
     } catch (error: any) {
-      console.error('[useWallet] Error connecting to wallet: ', error)
-      throw error
+      logError(error, 'ウォレット接続')
+      throw handleError(error, {
+        context: 'ウォレット接続',
+        type: ErrorType.WALLET,
+        notify: false,
+      })
     }
   }
 

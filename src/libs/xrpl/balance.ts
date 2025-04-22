@@ -1,4 +1,6 @@
 import { XRPLClient } from '@/libs/xrpl/client'
+import { logError, handleError } from '@/utils/error'
+import { ErrorType } from '@/types/error'
 
 /**
  * XRPLからアカウントの残高を取得するクラス
@@ -24,8 +26,12 @@ export class XRPLBalance {
 
       return xrpBalance
     } catch (error) {
-      console.error('[XRPLBalance] Error getting XRP balance: ', error)
-      throw error
+      logError(error, 'XRP残高取得')
+      throw handleError(error, {
+        context: 'XRP残高取得',
+        notify: true,
+        type: ErrorType.WALLET,
+      })
     }
   }
 
@@ -67,8 +73,12 @@ export class XRPLBalance {
 
       return '0'
     } catch (error) {
-      console.error('[XRPLBalance] Error getting token balance: ', error)
-      throw error
+      logError(error, 'トークン残高取得')
+      throw handleError(error, {
+        context: 'トークン残高取得',
+        notify: true,
+        type: ErrorType.WALLET,
+      })
     }
   }
 }

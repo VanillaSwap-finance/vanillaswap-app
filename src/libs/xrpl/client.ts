@@ -15,9 +15,9 @@ export class XRPLClient {
     if (!this.instance) {
       this.instance = new Client(wss)
       this.wss = wss
-      
+
       this.connectionPromise = this.instance.connect()
-      
+
       try {
         await this.connectionPromise
       } catch (error) {

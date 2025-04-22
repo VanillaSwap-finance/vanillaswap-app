@@ -1,6 +1,8 @@
 import useSWRInfinite from 'swr/infinite'
 import type { BaseToken } from '@/libs/xrplmeta/types'
 import type { TokenQueryParams } from '@/app/api/xrplmeta/token/schema'
+import { ApiError, ErrorCode } from '@/types/error'
+import { handleError, logError } from '@/utils/error'
 
 type SearchParams = Omit<TokenQueryParams, 'nameLike'> & {
   name_like?: string
@@ -61,21 +63,26 @@ export const useTokenSearch = (
             `/api/xrplmeta/token?${searchParams.toString()}`,
           )
           if (!response.ok) {
-            throw new Error(`API error: ${response.status}`)
+            throw new ApiError({
+              code: ErrorCode.API_REQUEST_FAILED,
+              message: `APIエラー: ${response.status}`,
+              statusCode: response.status,
+            })
           }
 
           const data = await response.json()
 
           // レスポンスの形式を確認
           if (!data || !Array.isArray(data.tokens)) {
-            throw new Error('Invalid response format')
+            throw new ApiError({
+              code: ErrorCode.API_RESPONSE_INVALID,
+              message: 'レスポンス形式が不正です',
+            })
           }
           return data
         } catch (err) {
-          console.error('Token search error:', err)
-          throw new Error(
-            `トークン検索に失敗しました: ${err instanceof Error ? err.message : String(err)}`,
-          )
+          logError(err, 'トークン検索')
+          throw handleError(err, { context: 'トークン検索' })
         }
       },
       {

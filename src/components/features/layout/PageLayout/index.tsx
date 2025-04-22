@@ -18,7 +18,8 @@ export default function PageLayout({ children }: PageLayoutProps) {
   return (
     <SnackbarProvider
       maxSnack={3}
-      autoHideDuration={3000}
+      autoHideDuration={5000}
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       action={(snackbarId) => (
         <button
           style={{

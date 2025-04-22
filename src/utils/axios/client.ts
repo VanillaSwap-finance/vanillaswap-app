@@ -4,8 +4,9 @@ import axios, {
   AxiosError,
   InternalAxiosRequestConfig,
 } from 'axios'
-import type { ApiConfig, ApiError, ApiResponse } from '@/utils/axios/types'
+import type { ApiConfig, ApiResponse } from '@/utils/axios/types'
 import { ApiLogger } from '@/utils/axios/logger'
+import { handleAxiosError, notifyError } from '@/utils/error'
 
 export class ApiClient {
   private client: AxiosInstance
@@ -50,7 +51,9 @@ export class ApiClient {
           path: axiosError.config?.url,
           method: axiosError.config?.method,
         })
-        throw error
+
+        const apiError = handleAxiosError(axiosError, 'API呼び出し')
+        throw apiError
       }
 
       this.logger.warn('API call failed, retrying', {
@@ -101,15 +104,12 @@ export class ApiClient {
         return response
       },
       (error) => {
-        const apiError: ApiError = {
-          status: error.response?.status || 500,
-          message:
-            error.response?.data?.message || 'An unexpected error occurred',
-          code: error.response?.data?.code,
-          name: error.name,
-          isAxiosError: error.isAxiosError,
-        }
+        const apiError = handleAxiosError(error, 'API応答')
+
         this.logger.logError(error, 'Response error')
+
+        notifyError(apiError)
+
         return Promise.reject(apiError)
       },
     )

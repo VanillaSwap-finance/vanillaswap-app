@@ -9,7 +9,8 @@ import {
   Box,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { enqueueSnackbar } from 'notistack'
+import { handleError } from '@/utils/error'
+import { ErrorType } from '@/types/error'
 import { useWallet, type WalletType } from '@/hooks/useWallet'
 import { WALLETS } from '@/constants/wallet'
 
@@ -29,8 +30,10 @@ export default function WalletConnectDialog({
       if (wallet.disabled) return
       await connect(wallet.label as WalletType)
     } catch (error: any) {
-      enqueueSnackbar(error.message, {
-        variant: 'error',
+      handleError(error, {
+        context: 'ウォレット接続',
+        type: ErrorType.WALLET,
+        notify: true,
       })
     } finally {
       onClose()
