@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Box, Button, Divider, IconButton, Typography } from '@mui/material'
+import { Box, Button, Divider, IconButton, Typography, CircularProgress } from '@mui/material'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import SwapAmountInput from '@/components/features/swap/SwapAmountInput'
 import TokenSelectButton from '@/components/features/swap/TokenSelectButton'
@@ -25,12 +25,47 @@ export default function SwapContent() {
   const [selectingTokenPosition, setSelectingTokenPosition] = useState<
     'from' | 'to'
   >('from')
-  const [xrpBalance, setXrpBalance] = useState<string>('0.000')
+  
+  const [fromTokenBalance, setFromTokenBalance] = useState<string>('0')
+  const [toTokenBalance, setToTokenBalance] = useState<string>('0')
+  
+  const [isLoadingFromBalance, setIsLoadingFromBalance] = useState<boolean>(false)
+  const [isLoadingToBalance, setIsLoadingToBalance] = useState<boolean>(false)
 
   const [openTokenSearchDialog, setOpenTokenSearchDialog] = useState(false)
 
   const { handleSwap } = useSwap()
-  const { getXRPBalance } = useWalletBalance()
+  const { getTokenBalance } = useWalletBalance()
+
+  const fetchFromTokenBalance = async () => {
+    if (!isConnected) return
+    
+    setIsLoadingFromBalance(true)
+    try {
+      const balance = await getTokenBalance(fromTokenSymbol, fromTokenIssuer)
+      setFromTokenBalance(balance)
+    } catch (error) {
+      console.error('[SwapContent] Error fetching from token balance: ', error)
+      setFromTokenBalance('0')
+    } finally {
+      setIsLoadingFromBalance(false)
+    }
+  }
+
+  const fetchToTokenBalance = async () => {
+    if (!isConnected) return
+    
+    setIsLoadingToBalance(true)
+    try {
+      const balance = await getTokenBalance(toTokenSymbol, toTokenIssuer)
+      setToTokenBalance(balance)
+    } catch (error) {
+      console.error('[SwapContent] Error fetching to token balance: ', error)
+      setToTokenBalance('0')
+    } finally {
+      setIsLoadingToBalance(false)
+    }
+  }
 
   const handleSwichToken = () => {
     const params = new URLSearchParams(searchParams.toString())
@@ -74,20 +109,31 @@ export default function SwapContent() {
   }
 
   useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        const balance = await getXRPBalance()
-        setXrpBalance(balance)
-      } catch (error) {
-        console.error('[SwapContent] Error fetching XRP balance: ', error)
-      }
-    }
+    fetchFromTokenBalance()
+  }, [isConnected, fromTokenSymbol, fromTokenIssuer, getTokenBalance])
 
-    fetchBalance()
-  }, [getXRPBalance])
+  useEffect(() => {
+    fetchToTokenBalance()
+  }, [isConnected, toTokenSymbol, toTokenIssuer, getTokenBalance])
 
   const CustomBox = ({ children }: { children: React.ReactNode }) => (
     <Box sx={{ border: 1, p: 1.5, borderRadius: 1 }}>{children}</Box>
+  )
+
+  const BalanceDisplay = ({ 
+    balance, 
+    isLoading 
+  }: { 
+    balance: string, 
+    isLoading: boolean 
+  }) => (
+    <Typography variant="caption" sx={{ mb: 1, minWidth: '80px', textAlign: 'right' }}>
+      {isLoading ? (
+        <CircularProgress size={12} sx={{ mr: 1 }} />
+      ) : (
+        balance
+      )}
+    </Typography>
   )
 
   return (
@@ -104,9 +150,10 @@ export default function SwapContent() {
                   From
                 </Typography>
                 {/* From token balance */}
-                <Typography variant="caption" sx={{ mb: 1 }}>
-                  {xrpBalance}
-                </Typography>
+                <BalanceDisplay 
+                  balance={fromTokenBalance} 
+                  isLoading={isLoadingFromBalance} 
+                />
               </Box>
               <Box
                 sx={{
@@ -158,9 +205,10 @@ export default function SwapContent() {
                   To
                 </Typography>
                 {/* To token balance */}
-                <Typography variant="caption" sx={{ mb: 1 }}>
-                  1000.000
-                </Typography>
+                <BalanceDisplay 
+                  balance={toTokenBalance} 
+                  isLoading={isLoadingToBalance} 
+                />
               </Box>
               <Box
                 sx={{

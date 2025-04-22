@@ -1,7 +1,6 @@
-import { useContext } from 'react'
+import { useContext, useCallback } from 'react'
 import WalletContext from '@/contexts/wallet'
 import { XRPLBalance } from '@/libs/xrpl/balance'
-import { XRPLClient } from '@/libs/xrpl/client'
 
 export const useWalletBalance = () => {
   const walletContext = useContext(WalletContext)
@@ -12,7 +11,7 @@ export const useWalletBalance = () => {
 
   const { wallet } = walletContext
 
-  const getXRPBalance = async (): Promise<string> => {
+  const getXRPBalance = useCallback(async (): Promise<string> => {
     if (!wallet?.address || !wallet?.wss) {
       return '0.000'
     }
@@ -23,11 +22,28 @@ export const useWalletBalance = () => {
       console.error('[useWalletBalance] Error getting XRP balance: ', error)
       return '0.000'
     }
-  }
+  }, [wallet?.address, wallet?.wss])
 
-  const getTokenBalance = async () => {
-    return 0
-  }
+  const getTokenBalance = useCallback(async (
+    currency: string,
+    issuer: string
+  ): Promise<string> => {
+    if (!wallet?.address || !wallet?.wss) {
+      return '0'
+    }
+
+    try {
+      return await XRPLBalance.getTokenBalance(
+        wallet.address,
+        wallet.wss,
+        currency,
+        issuer
+      )
+    } catch (error) {
+      console.error('[useWalletBalance] Error getting token balance: ', error)
+      return '0'
+    }
+  }, [wallet?.address, wallet?.wss])
 
   const getBatchBalances = async () => {
     return {
