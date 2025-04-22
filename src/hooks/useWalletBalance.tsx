@@ -24,26 +24,26 @@ export const useWalletBalance = () => {
     }
   }, [wallet?.address, wallet?.wss])
 
-  const getTokenBalance = useCallback(async (
-    currency: string,
-    issuer: string
-  ): Promise<string> => {
-    if (!wallet?.address || !wallet?.wss) {
-      return '0'
-    }
+  const getTokenBalance = useCallback(
+    async (currency: string, issuer: string): Promise<string> => {
+      if (!wallet?.address || !wallet?.wss) {
+        return '0'
+      }
 
-    try {
-      return await XRPLBalance.getTokenBalance(
-        wallet.address,
-        wallet.wss,
-        currency,
-        issuer
-      )
-    } catch (error) {
-      console.error('[useWalletBalance] Error getting token balance: ', error)
-      return '0'
-    }
-  }, [wallet?.address, wallet?.wss])
+      try {
+        return await XRPLBalance.getTokenBalance(
+          wallet.address,
+          wallet.wss,
+          currency,
+          issuer,
+        )
+      } catch (error) {
+        console.error('[useWalletBalance] Error getting token balance: ', error)
+        return '0'
+      }
+    },
+    [wallet?.address, wallet?.wss],
+  )
 
   const getBatchBalances = async () => {
     return {

@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Box, Button, Divider, IconButton, Typography, CircularProgress } from '@mui/material'
+import {
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  Typography,
+  CircularProgress,
+} from '@mui/material'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import SwapAmountInput from '@/components/features/swap/SwapAmountInput'
 import TokenSelectButton from '@/components/features/swap/TokenSelectButton'
@@ -25,11 +32,12 @@ export default function SwapContent() {
   const [selectingTokenPosition, setSelectingTokenPosition] = useState<
     'from' | 'to'
   >('from')
-  
+
   const [fromTokenBalance, setFromTokenBalance] = useState<string>('0')
   const [toTokenBalance, setToTokenBalance] = useState<string>('0')
-  
-  const [isLoadingFromBalance, setIsLoadingFromBalance] = useState<boolean>(false)
+
+  const [isLoadingFromBalance, setIsLoadingFromBalance] =
+    useState<boolean>(false)
   const [isLoadingToBalance, setIsLoadingToBalance] = useState<boolean>(false)
 
   const [openTokenSearchDialog, setOpenTokenSearchDialog] = useState(false)
@@ -39,7 +47,7 @@ export default function SwapContent() {
 
   const fetchFromTokenBalance = async () => {
     if (!isConnected) return
-    
+
     setIsLoadingFromBalance(true)
     try {
       const balance = await getTokenBalance(fromTokenSymbol, fromTokenIssuer)
@@ -54,7 +62,7 @@ export default function SwapContent() {
 
   const fetchToTokenBalance = async () => {
     if (!isConnected) return
-    
+
     setIsLoadingToBalance(true)
     try {
       const balance = await getTokenBalance(toTokenSymbol, toTokenIssuer)
@@ -120,19 +128,18 @@ export default function SwapContent() {
     <Box sx={{ border: 1, p: 1.5, borderRadius: 1 }}>{children}</Box>
   )
 
-  const BalanceDisplay = ({ 
-    balance, 
-    isLoading 
-  }: { 
-    balance: string, 
-    isLoading: boolean 
+  const BalanceDisplay = ({
+    balance,
+    isLoading,
+  }: {
+    balance: string
+    isLoading: boolean
   }) => (
-    <Typography variant="caption" sx={{ mb: 1, minWidth: '80px', textAlign: 'right' }}>
-      {isLoading ? (
-        <CircularProgress size={12} sx={{ mr: 1 }} />
-      ) : (
-        balance
-      )}
+    <Typography
+      variant="caption"
+      sx={{ mb: 1, minWidth: '80px', textAlign: 'right' }}
+    >
+      {isLoading ? <CircularProgress size={12} sx={{ mr: 1 }} /> : balance}
     </Typography>
   )
 
@@ -150,9 +157,9 @@ export default function SwapContent() {
                   From
                 </Typography>
                 {/* From token balance */}
-                <BalanceDisplay 
-                  balance={fromTokenBalance} 
-                  isLoading={isLoadingFromBalance} 
+                <BalanceDisplay
+                  balance={fromTokenBalance}
+                  isLoading={isLoadingFromBalance}
                 />
               </Box>
               <Box
@@ -205,9 +212,9 @@ export default function SwapContent() {
                   To
                 </Typography>
                 {/* To token balance */}
-                <BalanceDisplay 
-                  balance={toTokenBalance} 
-                  isLoading={isLoadingToBalance} 
+                <BalanceDisplay
+                  balance={toTokenBalance}
+                  isLoading={isLoadingToBalance}
                 />
               </Box>
               <Box

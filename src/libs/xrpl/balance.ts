@@ -41,7 +41,7 @@ export class XRPLBalance {
     address: string,
     wss: string,
     currency: string,
-    issuer: string
+    issuer: string,
   ): Promise<string> {
     if (currency === 'XRP' && issuer === 'XRP') {
       return this.getXRPBalance(address, wss)
@@ -58,9 +58,7 @@ export class XRPLBalance {
       })
 
       const trustline = response.result.lines.find(
-        (line: any) => 
-          line.currency === currency && 
-          line.account === issuer
+        (line: any) => line.currency === currency && line.account === issuer,
       )
 
       if (trustline) {
